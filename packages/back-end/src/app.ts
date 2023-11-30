@@ -1,18 +1,18 @@
 import express from 'express';
-import {readdirSync, statSync} from 'fs';
-import {join, resolve} from 'path';
-import {attachSequelize} from './middleware/db';
+import { readdirSync, statSync } from 'fs';
+import { join, resolve } from 'path';
+import { attachSequelize } from './middleware/db';
 import Cors from './middleware/cors';
 import IRoute from './types/IRoute';
 import cookieParser = require('cookie-parser');
-import config from './config'
+import config from './config';
 
 const app = express();
 
 // Attach any middleware
-app.use(express.json({limit: '5mb'}));
-app.use(express.urlencoded({limit: '5mb', extended: false}));
-app.use(express.text({limit: '5mb'}));
+app.use(express.json({ limit: '5mb' }));
+app.use(express.urlencoded({ limit: '5mb', extended: false }));
+app.use(express.text({ limit: '5mb' }));
 app.use(cookieParser());
 app.use(Cors);
 app.use(attachSequelize);
@@ -20,15 +20,16 @@ app.use(attachSequelize);
 // Read all entries from the "routes" directory. Filter out any entry that is not a file.
 const _ROUTES_ROOT = resolve(join(__dirname, './routes/'));
 const queue = readdirSync(_ROUTES_ROOT)
-  .map(entry => join(_ROUTES_ROOT, entry))
+  .map((entry) => join(_ROUTES_ROOT, entry))
   .filter(isFile);
 
 // For each item in the queue, inject it as an API route.
-queue.forEach(entry => {
+queue.forEach((entry) => {
   try {
     const required = require(entry);
     if (required?.default) {
-      const {route, router}: IRoute = required.default;
+      const { route, router }: IRoute = required.default;
+
       app.use(route, router());
 
       console.log('Injected route "%s"', route);
